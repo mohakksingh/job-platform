@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User{
+  id       String   @id @default(cuid())
+  email    String   @unique
+  password_hash String
+  role     String
+  candidateProfile CandidateProfile?
+  interviewerProfile InterviewerProfile?
+}
+
+model CandidateProfile {
+  id                  String       @id @default(cuid())
+  user                User?     @relation(fields: [user_id], references: [id])
+  user_id             String?      @unique
+  name                String?
+  skills              String?
+  preferences         String?
+  other_profile_details String?
+  interviews Interview[]
+}
+
+model InterviewerProfile{
+  id String @id @default(cuid())
+  user User? @relation(fields: [user_id],references: [id])
+  user_id String? @unique
+  company_name String?
+  industry String?
+  other_profile_details String?
+  interviews Interview[]
+  jobPostings JobPosting[]
+  feedbacks Feedback[]
+}
+
+
+model Interview{
+  id String @id @default(cuid())
+  candidate CandidateProfile? @relation(fields: [candidate_id],references: [id])
+  candidate_id String? @unique
+  interviewer InterviewerProfile? @relation(fields:[interviewer_id],references: [id])
+  interviewer_id String? 
+  job JobPosting? @relation(fields: [job_id],references: [id])
+  job_id String?
+  schedule_datetime DateTime?
+  status String?
+  feedback Feedback? @relation(fields: [feedback_id],references: [id])
+  feedback_id String?
+}
+
+model JobPosting{
+  id String @id @default(cuid())
+  title String
+  description String
+  requirements String
+  company InterviewerProfile? @relation(fields: [company_id],references: [id])
+  company_id String?
+  posted_datetime DateTime? 
+  interviews Interview[]
+}
+
+model Resource{
+  id String @id @default(cuid())
+  title String
+  type String
+  content String
+  author String
+  posted_datetime DateTime?
+}
+
+model Feedback{
+  id String @id @default(cuid())
+  interviewer InterviewerProfile @relation(fields: [interviewer_id],references: [id])
+  interviewer_id String
+  content String
+  rating Int?
+  submitted_datetime DateTime?
+  interviews Interview[]
+}
