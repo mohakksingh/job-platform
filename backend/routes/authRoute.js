@@ -43,4 +43,32 @@ router.post('/register',async (req,res) => {
     }
 });
 
+
+router.post('/login',async(req,res)=>{
+    const prisma = new PrismaClient({
+        datasourceUrl: process.env.DATABASE_URL,
+    }).$extends(withAccelerate())
+    try{
+        const {email,password_hash}=req.body
+        if(!email || !password_hash){
+            return res.status(400).json({
+                message:"Both email and password are required"
+            })
+        }
+        const user=await prisma.user.findUnique({
+            where:{
+                email
+            }
+        })
+        if(!user ){
+
+        }
+    }catch(e){
+        console.log(e);
+        res.status(500).json({
+            message:"Internal server error"
+        })
+    }
+})
+
 module.exports=router
