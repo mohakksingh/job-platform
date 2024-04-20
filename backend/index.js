@@ -10,7 +10,7 @@ app.get('/',(req,res)=>{
 
 const authRoutes=require('./routes/authRoute')
 
-app.use('/user',authRoutes)
+app.use('/api/user',authRoutes)
 
 app.listen(process.env.PORT || 3000,console.log("port is running"))
 

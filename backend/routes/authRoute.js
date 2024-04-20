@@ -1,20 +1,20 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
-const {PrismaClient} = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client/edge')
+const { withAccelerate } = require('@prisma/extension-accelerate')
+const env = require('dotenv');
 
 const prisma = new PrismaClient();
-const app = express();
-const PORT = process.env.port || 5000;
+const router = express.Router();
 
-app.use(bodyParser.json());
-app.use(cors());
-
-app.post('/register',async (req,res) => {
+router.post('/register',async (req,res) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: process.env.DATABASE_URL,
+    }).$extends(withAccelerate())
     try{
-        const{email,password,role} = req.body;
+        const{email,password_hash,role} = req.body;
 
-        if(!email || !password || !role){
+        if(!email || !password_hash || !role){
             return res.status(400).json({message: "Email, password, and role are required "});
 
         }   
@@ -25,12 +25,12 @@ app.post('/register',async (req,res) => {
 
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password_hash, 10);
 
         const newUser = await prisma.user.create({
             data: {
                 email,
-                passwordHash: hashedPassword,
+                password_hash: hashedPassword,
                 role,
             },
         });
@@ -42,3 +42,5 @@ app.post('/register',async (req,res) => {
         res.status(500).json({message: 'Internal server error'});
     }
 });
+
+module.exports=router
