@@ -19,8 +19,8 @@ app.post('/register',async (req,res) => {
 
         }
 
-        const exsistingUser = await prisma.user.findUnique({ where: {email}});
-        if(exsistingUser){
+        const existingUser = await prisma.user.findUnique({ where: {email}});
+        if(existingUser){
             return res.status(400).json({message: 'User already exists'});
 
         }
