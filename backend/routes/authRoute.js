@@ -17,7 +17,7 @@ app.post('/register',async (req,res) => {
         if(!email || !password || !role){
             return res.status(400).json({message: "Email, password, and role are required "});
 
-        }
+        }   
 
         const existingUser = await prisma.user.findUnique({ where: {email}});
         if(existingUser){
