@@ -24,21 +24,21 @@ model User{
 
 model CandidateProfile {
   id                  String       @id @default(cuid())
-  user                User?     @relation(fields: [user_id], references: [id])
-  user_id             String?      @unique
-  name                String?
-  skills              String?
-  preferences         String?
+  user                User     @relation(fields: [user_id], references: [id])
+  user_id             String      @unique
+  name                String
+  skills              String
+  preferences         String
   other_profile_details String?
   interviews Interview[]
 }
 
 model InterviewerProfile{
   id String @id @default(cuid())
-  user User? @relation(fields: [user_id],references: [id])
-  user_id String? @unique
-  company_name String?
-  industry String?
+  user User @relation(fields: [user_id],references: [id])
+  user_id String @unique
+  company_name String
+  industry String
   other_profile_details String?
   interviews Interview[]
   jobPostings JobPosting[]
@@ -48,16 +48,16 @@ model InterviewerProfile{
 
 model Interview{
   id String @id @default(cuid())
-  candidate CandidateProfile? @relation(fields: [candidate_id],references: [id])
-  candidate_id String? @unique
-  interviewer InterviewerProfile? @relation(fields:[interviewer_id],references: [id])
-  interviewer_id String? 
-  job JobPosting? @relation(fields: [job_id],references: [id])
-  job_id String?
-  schedule_datetime DateTime?
-  status String?
-  feedback Feedback? @relation(fields: [feedback_id],references: [id])
-  feedback_id String?
+  candidate CandidateProfile @relation(fields: [candidate_id],references: [id])
+  candidate_id String @unique
+  interviewer InterviewerProfile @relation(fields:[interviewer_id],references: [id])
+  interviewer_id String
+  job JobPosting @relation(fields: [job_id],references: [id])
+  job_id String
+  schedule_datetime DateTime
+  status String
+  feedback Feedback @relation(fields: [feedback_id],references: [id])
+  feedback_id String
 }
 
 model JobPosting{
@@ -65,9 +65,9 @@ model JobPosting{
   title String
   description String
   requirements String
-  company InterviewerProfile? @relation(fields: [company_id],references: [id])
-  company_id String?
-  posted_datetime DateTime? 
+  company InterviewerProfile @relation(fields: [company_id],references: [id])
+  company_id String
+  posted_datetime DateTime?
   interviews Interview[]
 }
 
