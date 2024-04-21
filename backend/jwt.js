@@ -7,7 +7,7 @@ const jwtAuthMiddleware = (req, res, next) => {
     return res.status(401).json({ message: 'Authentication token missing' });
   }
 
-  const token = req.headers.split(' ')[1]
+  const token = req.headers.authorization.split(' ')[1]
   if(!token){
     res.status(401).json({
       message:"Unauthorized"

@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const { PrismaClient } = require('@prisma/client/edge')
 const { withAccelerate } = require('@prisma/extension-accelerate')
 const env = require('dotenv');
+const { generateToken, jwtAuthMiddleware } = require('../jwt');
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -65,15 +66,29 @@ router.post('/login',async(req,res)=>{
                 email
             }
         })
-        if(!user ){
-
+        if(!user){
+            return res.status(400).json({
+                message:"Invalid email"
+            })
         }
+        const isMatch=await bcrypt.compare(password_hash,user.password_hash)
+        if(!isMatch){
+            return res.status(400).json({
+                message:"Invalid password"
+            })
+        }
+        const token=generateToken(user)
+        console.log(token);
+        res.status(200).json({
+            message:'Login successful',
+            token     
+        })
     }catch(e){
         console.log(e);
         res.status(500).json({
             message:"Internal server error"
         })
     }
-})
+})  
 
 module.exports=router
