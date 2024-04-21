@@ -14,10 +14,15 @@ router.post('/register',async (req,res) => {
     try{
         const{email,password_hash,role} = req.body;
 
-        if(!email || !password_hash || !role){
+         if(!email || !password_hash ){
             return res.status(400).json({message: "Email, password, and role are required "});
-
         }   
+        
+        if(role !=='candidate' && role !=='interviewer'){
+            return res.status(400).json({
+                message:"Role  must be either candidate or interviewer"
+            })
+        }
 
         const existingUser = await prisma.user.findUnique({ where: {email}});
         if(existingUser){
