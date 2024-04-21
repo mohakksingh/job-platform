@@ -91,4 +91,11 @@ router.post('/login',async(req,res)=>{
     }
 })  
 
+//logout route
+router.get('/logout',jwtAuthMiddleware,(req,res)=>{
+    res.status(200).json({
+        message:"Logout successful"
+    })
+})
+
 module.exports=router
