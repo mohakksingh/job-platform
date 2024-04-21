@@ -5,7 +5,6 @@ const { withAccelerate } = require('@prisma/extension-accelerate')
 const env = require('dotenv');
 const { generateToken, jwtAuthMiddleware } = require('../jwt');
 
-const prisma = new PrismaClient();
 const router = express.Router();
 
 router.post('/register',async (req,res) => {
@@ -81,6 +80,7 @@ router.post('/login',async(req,res)=>{
         console.log(token);
         res.status(200).json({
             message:'Login successful',
+            user:user.id,
             token     
         })
     }catch(e){
@@ -92,7 +92,7 @@ router.post('/login',async(req,res)=>{
 })  
 
 //logout route
-router.get('/logout',jwtAuthMiddleware,(req,res)=>{
+router.get('/logout',jwtAuthMiddleware,async(req,res)=>{
     res.status(200).json({
         message:"Logout successful"
     })
