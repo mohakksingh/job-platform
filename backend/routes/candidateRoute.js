@@ -54,6 +54,9 @@ router.put('/:id',jwtAuthMiddleware,async(req,res)=>{
         const existingUser = await prisma.user.findUnique({
             where: {
                 id: userId
+            },
+            include: {
+                candidateProfile: true // Include the candidate profile if it exists
             }
         });
 
@@ -66,28 +69,60 @@ router.put('/:id',jwtAuthMiddleware,async(req,res)=>{
         // Check if the user has the correct role
         if (existingUser.role !== 'candidate') {
             return res.status(403).json({
-                message: "Only candidates can access this route"
+                message: "Only candidates can update their profile"
             });
         }
 
-        // Update the user's profile data
-        const updatedUser = await prisma.user.update({
-            where: {
-                id: userId
-            },
-            data: {
-                name: req.body.name,
-                skills: req.body.skills,
-                preferences: req.body.preferences,
-                other_profile_details: req.body.other_profile_details
-            }
-        });
+        // Update the candidate profile (if exists) or create a new one
+        let updatedUser;
+        if (existingUser.candidateProfile) {
+            // Update existing candidate profile
+            updatedUser = await prisma.user.update({
+                where: {
+                    id: userId
+                },
+                data: {
+                    candidateProfile: {
+                        update: {
+                            name: req.body.name,
+                            skills: req.body.skills,
+                            preferences: req.body.preferences,
+                            other_profile_details: req.body.other_profile_details
+                        }
+                    }
+                },
+                include: {
+                    candidateProfile: true
+                }
+            });
+        } else {
+            // Create new candidate profile
+            updatedUser = await prisma.user.update({
+                where: {
+                    id: userId
+                },
+                data: {
+                    candidateProfile: {
+                        create: {
+                            name: req.body.name,
+                            skills: req.body.skills,
+                            preferences: req.body.preferences,
+                            other_profile_details: req.body.other_profile_details
+                        }
+                    }
+                },
+                include: {
+                    candidateProfile: true
+                }
+            });
+        }
 
         console.log("User profile updated:", updatedUser);
         res.status(200).json({
             message: "User profile updated successfully",
             user: updatedUser
         });
+   
     }catch(e){
         console.log(e);
         res.status(500).json({
