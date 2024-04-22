@@ -135,8 +135,7 @@ router.get('/:id/interviews',jwtAuthMiddleware,async (req,res)=>{
         datasourceUrl: process.env.DATABASE_URL,
     }).$extends(withAccelerate())
     try{
-        const userData=req.user
-        const userId=userData.id
+        const userId=req.params.id
         const user=await prisma.user.findUnique({
             where:{
                 id:userId
@@ -152,14 +151,15 @@ router.get('/:id/interviews',jwtAuthMiddleware,async (req,res)=>{
                 message:"Only candidates can access this route"
             })
         }
-        const interviews=await prisma.user.findMany({
+        const interviews=await prisma.interview.findMany({
             where:{
-                candidateId:userId
+                candidate_id:userId
             },
-            include: {
-                interview: true
+            include:{
+                interviewer:true
             }
         })
+        console.log(interviews)
         res.status(200).json({
             interviews
         })
@@ -172,8 +172,58 @@ router.get('/:id/interviews',jwtAuthMiddleware,async (req,res)=>{
     }
 })
 
-router.post('/:id/interviews',jwtAuthMiddleware,(req,res)=>{
+router.post('/:id/interviews',jwtAuthMiddleware,async (req,res)=>{
+    const prisma = new PrismaClient({
+        datasourceUrl: process.env.DATABASE_URL,
+    }).$extends(withAccelerate())
     try{
+        const userId=req.params.id
+        const user=await prisma.user.findUnique({
+            where:{
+                id:userId
+            }
+        })
+        if(!user){
+            return res.status(404).json({
+                message:"user not found"
+            })
+        }
+        if(user.role!=="candidate"){
+            return res.status(403).json({
+                message:"Only candidates can access this route"
+            })
+        }
+        const interviewerId=req.body.interviewer_id
+        const interviewer=await prisma.user.findUnique({
+            where:{
+                id:interviewerId
+            }
+        })
+        if(!interviewer){
+            return res.status(404).json({
+                message:"Interviewer not found"
+            })
+        }
+        if(interviewer.role !== 'interviewer'){
+            return res.status(403).json({
+                message:"Only interviewers are allowed to assign interviews"
+            })
+        }
+        const interview=await prisma.interview.create({
+            data:{
+                candidate_id:userId,
+                interviewer_id:interviewerId,
+                schedule_datetime:req.body.schedule_datetime,
+                status:req.body.status,
+                feedback:req.body.feedback,
+                //fix:argument candidate is missing
+
+            }
+        })
+        res.status(200).json({
+            interview
+        })
+
 
     }catch(e){
         console.log(e);
