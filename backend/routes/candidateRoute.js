@@ -27,7 +27,6 @@ router.get('/:id',jwtAuthMiddleware,async(req,res)=>{
                 message:"Only candidates can access this route"
             })
         }
-        console.log(user);
         res.status(200).json({user})
     }catch(e){
         console.log(e);
@@ -87,7 +86,7 @@ router.put('/:id',jwtAuthMiddleware,async(req,res)=>{
                             name: req.body.name,
                             skills: req.body.skills,
                             preferences: req.body.preferences,
-                            other_profile_details: req.body.other_profile_details
+                            resume: req.body.resume
                         }
                     }
                 },
@@ -107,7 +106,7 @@ router.put('/:id',jwtAuthMiddleware,async(req,res)=>{
                             name: req.body.name,
                             skills: req.body.skills,
                             preferences: req.body.preferences,
-                            other_profile_details: req.body.other_profile_details
+                            resume: req.body.resume
                         }
                     }
                 },
@@ -131,8 +130,39 @@ router.put('/:id',jwtAuthMiddleware,async(req,res)=>{
     }
 })
 
-router.get('/:id/interviews',jwtAuthMiddleware,(req,res)=>{
+router.get('/:id/interviews',jwtAuthMiddleware,async (req,res)=>{
+    const prisma = new PrismaClient({
+        datasourceUrl: process.env.DATABASE_URL,
+    }).$extends(withAccelerate())
     try{
+        const userData=req.user
+        const userId=userData.id
+        const user=await prisma.user.findUnique({
+            where:{
+                id:userId
+            }
+        })
+        if(!user){
+            return res.status(404).json({
+                message:"User not found"
+            })
+        }
+        if(user.role !=='candidate'){
+            return res.status(403).json({
+                message:"Only candidates can access this route"
+            })
+        }
+        const interviews=await prisma.user.findMany({
+            where:{
+                candidateId:userId
+            },
+            include: {
+                interview: true
+            }
+        })
+        res.status(200).json({
+            interviews
+        })
 
     }catch(e){
         console.log(e);

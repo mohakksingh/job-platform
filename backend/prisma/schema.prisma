@@ -29,7 +29,7 @@ model CandidateProfile {
   name                String
   skills              String
   preferences         String
-  other_profile_details String?
+  resume              String  
   interviews Interview[]
 }
 
