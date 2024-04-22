@@ -75,7 +75,7 @@ router.put('/:id',jwtAuthMiddleware,async(req,res)=>{
             where: {
                 id: userId
             },
-            update: {
+            data: {
                 name: req.body.name,
                 skills: req.body.skills,
                 preferences: req.body.preferences,
