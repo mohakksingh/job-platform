@@ -234,6 +234,25 @@ router.post('/:id/interviews',jwtAuthMiddleware,async (req,res)=>{
 router.delete('/:id/interviews/:interviewId',jwtAuthMiddleware,async (req,res)=>{
     try{
         const userId=req.params.id
+        const user=await prisma.user.findUnique({
+            where:{
+                id:userId
+            },
+            include:{
+                interview:true
+            }
+        })
+        if(!user){
+            return res.status(404).json({
+                message:"User not found"
+            })
+        }
+        if(user.role !=='candidate'){
+            return res.status(403).json({
+                message:"Only candidates can access this route"
+            })
+        }
+        
         const interviewId=req.params.interviewId
         const existingInterview=await prisma.interview.findUnique(({
             where:{

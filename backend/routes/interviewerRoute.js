@@ -4,6 +4,7 @@ const { jwtAuthMiddleware } = require('../jwt')
 const { PrismaClient } = require('@prisma/client/edge')
 const { withAccelerate } = require('@prisma/extension-accelerate')
 
+
 //TODO: Implement jwtAuthMiddleware
 router.get('/:id',jwtAuthMiddleware,async(req,res)=>{
     const prisma = new PrismaClient({
@@ -115,8 +116,83 @@ router.put('/:id',jwtAuthMiddleware,async(req,res)=>{
     }
 })
 
-router.get('/:id/interviews',(req,res)=>{
+router.get('/:id/interviews',jwtAuthMiddleware,async(req,res)=>{
+    const prisma = new PrismaClient({
+        datasourceUrl: process.env.DATABASE_URL,
+    }).$extends(withAccelerate())
     try{
+        const userId=req.params.id
+        const user=await prisma.user.findUnique({
+            where:{
+                id:userId
+            }
+        })
+        if(!user){
+            return res.status(404).json({
+                message:"User does not exist"
+            })
+        }
+        if(user.role !=='interviewer'){
+            return res.status(403).json({
+                message:"Only interviewer can access this route"
+            })
+        }
+        const interviews=await prisma.interview.findMany({
+            where:{
+                interviewer_id:userId,
+            },
+            include:{
+                candidate:true
+            }
+        })
+        res.status(200).json({
+            interviews
+        })
+    }catch(e){
+        console.log(e);
+        res.status(500).json({
+            message:"Internal server error"
+        })
+    }
+})
+
+router.post('/:id/interviews',jwtAuthMiddleware,async(req,res)=>{
+    const prisma = new PrismaClient({
+        datasourceUrl: process.env.DATABASE_URL,
+    }).$extends(withAccelerate())
+    try{
+        const userId=req.params.id
+        const user=await prisma.user.findUnique({
+            where:{
+                id:userId
+            }
+        })
+        if(!user){
+            return res.status(404).json({
+                message:"User does not exist"
+            })
+        }
+        if(user.role !== 'interviewer'){
+            return res.status(403).json({
+                message:"Only interviewer can access this route"
+            })
+        }
+        const interviewId=req.body.interviewId
+        const candidateId=req.body.candidateId
+        const interview=await prisma.interview.create({
+            data:{
+                interview_id:interviewId,
+                interviewer_id:userId,
+                candidate_id:candidateId
+            },
+            include:{
+                candidate:true
+            }
+
+        })
+        res.status(200).json({
+            interview
+        })
 
     }catch(e){
         console.log(e);
@@ -126,20 +202,48 @@ router.get('/:id/interviews',(req,res)=>{
     }
 })
 
-router.post('/:id/interviews',(req,res)=>{
+router.delete('/:id/interviews/:interviewId',async(req,res)=>{
+    const prisma = new PrismaClient({
+        datasourceUrl: process.env.DATABASE_URL,
+    }).$extends(withAccelerate())
     try{
-
-    }catch(e){
-        console.log(e);
-        res.status(500).json({
-            message:"Internal server error"
+        const userId=req.params.id
+        const interviewId=req.params.interviewId
+        const user=await prisma.user.findUnique({
+            where:{
+                id:userId
+            }
         })
-    }
-})
+        if(!user){
+            return res.status(404).json({
+                message:"User does not exist"
+            })
+        }
+        if(user.role !== 'interviewer'){
+            return res.status(403).json({
+                message:"Only interviewer can access this route"
+            })
+        }
+        const existingInterview=await prisma.interview.findUnique({
+            where:{
+                interview_id:interviewId
+            }
+        })
+        if(!existingInterview){
+            return res.status(404).json({
+                message:"Interview not found"
+            })
+        }
+        const interview=await prisma.interview.delete({
+            where:{
+                interviewer_id:interviewId
+            }
+        })
 
-router.delete('/:id/interviews/:interviewId',(req,res)=>{
-    try{
-
+        res.status(200).json({
+            interview
+        })
+        console.log("Interview deleted");
     }catch(e){
         console.log(e);
         res.status(500).json({
