@@ -231,14 +231,37 @@ router.post('/:id/interviews',jwtAuthMiddleware,async (req,res)=>{
     }
 })
 
-router.delete('/:id/interviews/:interviewId',jwtAuthMiddleware,(req,res)=>{
+router.delete('/:id/interviews/:interviewId',jwtAuthMiddleware,async (req,res)=>{
     try{
         const userId=req.params.id
         const interviewId=req.params.interviewId
+        const existingInterview=await prisma.interview.findUnique(({
+            where:{
+                id:interviewId
+            }
+        }))
+        if (!existingInterview){
+            return res.status(404).json({
+                message:"Interview not found"
+            })
+        }
+
+        if(existingInterview.candidate_id !== userId){
+            return res.status(403).json({
+                message:"You are not allowed to delete this interview"
+            })
+        }
+
+        const interview=await prisma.interview.delete({
+            where:{
+                id:interviewId,
+
+            }
+        })
         res.status(200).json({
             message:"Interview deleted successfully"
-
         })
+
 
     }catch(e){
         console.log(e);
