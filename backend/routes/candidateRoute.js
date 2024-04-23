@@ -212,12 +212,10 @@ router.post('/:id/interviews',jwtAuthMiddleware,async (req,res)=>{
         const interview=await prisma.interview.create({
             data:{
                 candidate_id:userId,
-                interviewer_id:interviewerId,
-                schedule_datetime:req.body.schedule_datetime,
-                status:req.body.status,
                 feedback:req.body.feedback,
-                //fix:argument candidate is missing
-
+                schedule_datetime:req.body.schedule_datetime,
+                interviewer_id:interviewerId,
+                status:req.body.status
             }
         })
         res.status(200).json({
@@ -235,6 +233,12 @@ router.post('/:id/interviews',jwtAuthMiddleware,async (req,res)=>{
 
 router.delete('/:id/interviews/:interviewId',jwtAuthMiddleware,(req,res)=>{
     try{
+        const userId=req.params.id
+        const interviewId=req.params.interviewId
+        res.status(200).json({
+            message:"Interview deleted successfully"
+
+        })
 
     }catch(e){
         console.log(e);
