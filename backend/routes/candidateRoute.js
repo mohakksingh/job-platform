@@ -213,9 +213,7 @@ router.post('/:id/interviews',jwtAuthMiddleware,async (req,res)=>{
             data:{
                 candidate_id:userId,
                 feedback:req.body.feedback,
-                schedule_datetime:req.body.schedule_datetime,
-                interviewer_id:interviewerId,
-                status:req.body.status
+                interviewer_id:interviewerId
             }
         })
         res.status(200).json({
@@ -252,7 +250,7 @@ router.delete('/:id/interviews/:interviewId',jwtAuthMiddleware,async (req,res)=>
                 message:"Only candidates can access this route"
             })
         }
-        
+
         const interviewId=req.params.interviewId
         const existingInterview=await prisma.interview.findUnique(({
             where:{

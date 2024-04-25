@@ -68,7 +68,7 @@ model JobPosting{
   company InterviewerProfile @relation(fields: [company_id],references: [id])
   company_id String
   posted_datetime DateTime?
-  interviews Interview[]
+  interviews Interview[]  
 }
 
 model Resource{
