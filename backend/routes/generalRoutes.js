@@ -222,11 +222,99 @@ router.put('/jobs/:id',async(req,res)=>{
     }
 })
 
-router.delete('api/jobs/:id',(req,res)=>{
+router.delete('api/jobs/:id',async(req,res)=>{
     const prisma = new PrismaClient({
         datasourceUrl: process.env.DATABASE_URL,
     }).$extends(withAccelerate())
     try{
+        const jobId=req.params.id
+        const job=await prisma.jobPosting.findUnique({
+            where:{
+                id:jobId
+            }
+        })
+        if(!job){
+            return res.status(404).json({
+                message:"Job not found"
+            })
+        }
+        const jobDeleted=await prisma.jobPosting.delete({
+            where:{
+                id:jobId
+            },
+            include:{
+                interviewer:true
+            }
+        })
+        res.status(200).json({
+            jobDeleted
+        })
+        console.log("Job deleted");
+    }catch(e){
+        console.log(e);
+        res.status(500).json({
+            message:"Internal server error"
+        })
+    }
+})
+
+router.post('/api/search',async(req,res)=>{
+    const prisma = new PrismaClient({
+        datasourceUrl: process.env.DATABASE_URL,
+    }).$extends(withAccelerate())
+    try{
+        const {search}=req.body
+        const jobs=await prisma.jobPosting.findMany({
+            where:{
+                OR:[
+                    {
+                        title:{
+                            contains:search
+                        }
+                    },
+                    {
+                        description:{
+                            contains:search
+                        }
+                    },
+                    {
+                        requirements:{
+                            contains:search
+                        }
+                    },
+                    {
+                        company:{
+                            contains:search
+                        }
+                    }
+                ]
+            },
+            include:{
+                interviewer:true
+            }
+        })
+    }catch(e){
+        console.log(e);
+        res.status(500).json({
+            message:"Internal server error"
+        })
+    }
+})
+
+router.get('api/stats',async(req,res)=>{
+    const prisma = new PrismaClient({
+        datasourceUrl: process.env.DATABASE_URL,
+    }).$extends(withAccelerate())
+    try{
+        const totalJobs=await prisma.jobPosting.count()
+        const totalCandidates=await prisma.candidateProfile.count()
+        const totalInterviews=await prisma.interview.count()
+
+        res.status(200).json({
+            totalJobs,
+            totalCandidates,
+            totalInterviews
+        })
 
     }catch(e){
         console.log(e);
@@ -236,40 +324,22 @@ router.delete('api/jobs/:id',(req,res)=>{
     }
 })
 
-router.post('/api/search',(req,res)=>{
+router.post('/api/contact',async(req,res)=>{
     const prisma = new PrismaClient({
         datasourceUrl: process.env.DATABASE_URL,
     }).$extends(withAccelerate())
     try{
-
-    }catch(e){
-        console.log(e);
-        res.status(500).json({
-            message:"Internal server error"
+        const {name,email,message}=req.body
+        const contact=await prisma.contact.create({
+            data:{
+                name,
+                email,
+                message
+            }
         })
-    }
-})
-
-router.get('api/stats',(req,res)=>{
-    const prisma = new PrismaClient({
-        datasourceUrl: process.env.DATABASE_URL,
-    }).$extends(withAccelerate())
-    try{
-
-    }catch(e){
-        console.log(e);
-        res.status(500).json({
-            message:"Internal server error"
+        res.status(201).json({
+            contact
         })
-    }
-})
-
-router.post('/api/contact',(req,res)=>{
-    const prisma = new PrismaClient({
-        datasourceUrl: process.env.DATABASE_URL,
-    }).$extends(withAccelerate())
-    try{
-
     }catch(e){
         console.log(e);
         res.status(500).json({
