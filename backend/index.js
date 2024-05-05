@@ -1,7 +1,8 @@
-const { configDotenv } = require('dotenv');
+const dotenv  = require('dotenv');
 const express= require('express');
 const app=express()
-configDotenv()
+const PORT = process.env.PORT || 3000;
+dotenv.config();
 app.use(express.json())
 
 app.get('/',(req,res)=>{
@@ -11,6 +12,7 @@ app.get('/',(req,res)=>{
 const authRoutes=require('./routes/authRoute')
 
 app.use('/api/user',authRoutes)
+
 
 app.listen(process.env.PORT || 3000,console.log("port is running"))
 
