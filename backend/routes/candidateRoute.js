@@ -212,8 +212,14 @@ router.post('/:id/interviews',jwtAuthMiddleware,async (req,res)=>{
         const interview=await prisma.interview.create({
             data:{
                 candidate_id:userId,
-                feedback:req.body.feedback,
-                interviewer_id:interviewerId
+                interviewer_id:interviewerId,
+                job_id:req.body.job_id,
+                schedule_datetime:req.body.schedule_datetime,
+                status:req.body.status,
+                feedback:req.body.feedback
+            },
+            include:{
+                interviewer:true
             }
         })
         res.status(200).json({

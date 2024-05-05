@@ -55,7 +55,7 @@ model Interview{
   job JobPosting @relation(fields: [job_id],references: [id])
   job_id String
   schedule_datetime DateTime
-  status String
+  status String 
   feedback Feedback @relation(fields: [feedback_id],references: [id])
   feedback_id String
 }
