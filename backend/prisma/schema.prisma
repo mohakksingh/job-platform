@@ -29,7 +29,7 @@ model CandidateProfile {
   name                String
   skills              String
   preferences         String
-  other_profile_details String?
+  resume              String  
   interviews Interview[]
 }
 
@@ -55,7 +55,7 @@ model Interview{
   job JobPosting @relation(fields: [job_id],references: [id])
   job_id String
   schedule_datetime DateTime
-  status String
+  status String 
   feedback Feedback @relation(fields: [feedback_id],references: [id])
   feedback_id String
 }
@@ -68,7 +68,7 @@ model JobPosting{
   company InterviewerProfile @relation(fields: [company_id],references: [id])
   company_id String
   posted_datetime DateTime?
-  interviews Interview[]
+  interviews Interview[]  
 }
 
 model Resource{
